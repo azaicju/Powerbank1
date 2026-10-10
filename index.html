@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>폐보조배터리 배출 안내</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #eef3f1;
+  --surface: #ffffff;
+  --ink: #12302b;
+  --muted: #55706a;
+  --line: #cfdcd8;
+  --brand: #0f6b5c;
+  --brand-ink: #ffffff;
+  --warn-bg: #fff3d6;
+  --warn-ink: #6b4700;
+  --warn-line: #e8b94a;
+  --no: #b3261e;
+  --yes: #0f6b5c;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1a18; --surface: #162624; --ink: #e3efec; --muted: #9bb5af;
+    --line: #2a403c; --brand: #4fc2ac; --brand-ink: #08201b;
+    --warn-bg: #3a2d0e; --warn-ink: #f3d994; --warn-line: #8a6a1c;
+    --no: #ff8a80; --yes: #4fc2ac;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1a18; --surface: #162624; --ink: #e3efec; --muted: #9bb5af;
+  --line: #2a403c; --brand: #4fc2ac; --brand-ink: #08201b;
+  --warn-bg: #3a2d0e; --warn-ink: #f3d994; --warn-line: #8a6a1c;
+  --no: #ff8a80; --yes: #4fc2ac;
+}
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  line-height: 1.65;
+  word-break: keep-all;
+}
+.wrap { max-width: 640px; margin: 0 auto; padding: 28px 18px 48px; }
+
+header h1 {
+  font-size: clamp(1.7rem, 7vw, 2.3rem);
+  font-weight: 900;
+  line-height: 1.2;
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
+}
+header p { margin: 0; color: var(--muted); }
+
+/* tabs (CSS only) */
+.tabs input { position: absolute; opacity: 0; pointer-events: none; }
+.tab-bar {
+  display: grid; grid-template-columns: 1fr 1fr;
+  margin: 22px 0 16px;
+  background: var(--surface);
+  border: 2px solid var(--brand);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.tab-bar label {
+  text-align: center; padding: 13px 8px;
+  font-weight: 700; cursor: pointer; color: var(--brand);
+  user-select: none;
+}
+.tab-bar label + label { border-left: 2px solid var(--brand); }
+#t1:checked ~ .tab-bar label[for="t1"],
+#t2:checked ~ .tab-bar label[for="t2"] {
+  background: var(--brand); color: var(--brand-ink);
+}
+#t1:focus-visible ~ .tab-bar label[for="t1"],
+#t2:focus-visible ~ .tab-bar label[for="t2"] {
+  outline: 3px solid var(--ink); outline-offset: -6px;
+}
+.panel { display: none; }
+#t1:checked ~ .panels .p1,
+#t2:checked ~ .panels .p2 { display: block; }
+
+/* cards */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 14px;
+}
+.card h2 { font-size: 1.1rem; margin: 0 0 10px; }
+.rules { list-style: none; margin: 0; padding: 0; }
+.rules li {
+  display: grid; grid-template-columns: 1.9rem 1fr; gap: 6px;
+  padding: 11px 0; border-top: 1px solid var(--line);
+}
+.rules li:first-child { border-top: 0; padding-top: 2px; }
+.mark { font-weight: 900; font-size: 1.15rem; line-height: 1.5; }
+.yes .mark { color: var(--yes); }
+.no .mark { color: var(--no); }
+.rules b { display: block; }
+.rules span { color: var(--muted); font-size: 0.93rem; }
+
+.notice {
+  background: var(--warn-bg); color: var(--warn-ink);
+  border: 1px solid var(--warn-line);
+  border-radius: 14px; padding: 16px 18px; margin-bottom: 14px;
+}
+.notice strong { display: block; margin-bottom: 4px; }
+.notice p { margin: 0; }
+
+.btn {
+  display: block; text-align: center; text-decoration: none;
+  background: var(--brand); color: var(--brand-ink);
+  font-weight: 700; padding: 14px 16px; border-radius: 12px;
+  margin-top: 12px;
+}
+.btn:hover { filter: brightness(1.08); }
+.btn:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+.small { font-size: 0.88rem; color: var(--muted); margin: 10px 0 0; }
+.region {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 10px; flex-wrap: wrap;
+}
+.region strong { font-size: 1.05rem; }
+.hint { margin: 0; padding-left: 1.2em; }
+.hint li { margin: 3px 0; }
+footer { margin-top: 26px; font-size: 0.82rem; color: var(--muted); text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>폐보조배터리,<br>이렇게 버려요</h1>
+    <p>배출 방법과 수거 장소를 한곳에서 확인하세요.</p>
+  </header>
+
+  <main class="tabs">
+    <input type="radio" name="tab" id="t1" checked>
+    <input type="radio" name="tab" id="t2">
+
+    <div class="tab-bar">
+      <label for="t1">배출 방법</label>
+      <label for="t2">수거 장소</label>
+    </div>
+
+    <div class="panels">
+
+      <!-- 배출 방법 -->
+      <section class="panel p1">
+        <div class="card">
+          <h2>이것만 지키면 돼요</h2>
+          <ul class="rules">
+            <li class="yes"><span class="mark">O</span>
+              <div><b>폐건전지 수거함에 넣기</b><span>보조배터리는 폐건전지 수거함에 배출합니다.</span></div></li>
+            <li class="no"><span class="mark">X</span>
+              <div><b>일반쓰레기·플라스틱에 버리지 않기</b><span>일반쓰레기나 플라스틱 배출함에 넣으면 안 됩니다.</span></div></li>
+            <li class="no"><span class="mark">X</span>
+              <div><b>분해하지 않기</b><span>뜯거나 분리하지 말고 그대로 넣는 것이 좋습니다.</span></div></li>
+            <li class="yes"><span class="mark">O</span>
+              <div><b>단자가 드러나 있다면 절연하기</b><span>노출된 단자 부분을 절연 처리한 뒤 배출하세요.</span></div></li>
+            <li class="yes"><span class="mark">O</span>
+              <div><b>2차전지 전용 수거함이 있다면 거기에</b><span>따로 마련된 곳에서는 전용 수거함에 넣어 주세요.</span></div></li>
+          </ul>
+        </div>
+
+        <div class="notice">
+          <strong>지자체마다 배출 안내가 달라요</strong>
+          <p>살고 있는 지역의 안내를 꼭 확인하세요. 아래 지역별 안내 링크에서 자세한 내용을 볼 수 있습니다.</p>
+        </div>
+
+        <div class="card">
+          <h2>지역별 배출 안내</h2>
+          <div class="region">
+            <strong>울산광역시 남구</strong>
+          </div>
+          <a class="btn" href="https://www.ulsannamgu.go.kr/fieldInfo/recyclingWaste04.jsp" target="_blank" rel="noopener noreferrer">울산 남구 안내 보러가기</a>
+          <p class="small">시범 페이지라 예시로 한 곳만 넣었습니다. 다른 지역은 추후 추가됩니다.</p>
+        </div>
+      </section>
+
+      <!-- 수거 장소 -->
+      <section class="panel p2">
+        <div class="card">
+          <h2>서울시 배출장소 찾기</h2>
+          <p style="margin:0">서울시의 배출장소 정보를 모아둔 사이트로 이동합니다.</p>
+          <a class="btn" href="https://wasteg.d2henry.com/ko" target="_blank" rel="noopener noreferrer">서울시 배출장소 사이트 열기</a>
+        </div>
+
+        <div class="card">
+          <h2>접속한 뒤에는</h2>
+          <ol class="hint">
+            <li>사이트에서 대한민국 지도를 찾으세요.</li>
+            <li>지도에서 <b>서울시</b>를 누르면 배출장소 정보로 연결됩니다.</li>
+          </ol>
+        </div>
+
+        <div class="notice">
+          <strong>다른 지역은 준비 중이에요</strong>
+          <p>지금은 서울시만 예시로 연결해 두었습니다.</p>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer>시범 제작 페이지 · 정확한 내용은 각 지자체 안내를 확인하세요</footer>
+</div>
+</body>
+</html>
