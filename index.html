@@ -6,164 +6,525 @@
 <title>안산 폐보조배터리 배출 안내</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
 :root {
-  --bg: #eef3f1;
-  --surface: #ffffff;
-  --ink: #0e2924;
-  --muted: #4d6862;
-  --line: #cfdcd8;
-  --brand: #0f6b5c;
-  --brand-ink: #ffffff;
-  --yes: #0f6b5c;
-  --no: #b3261e;
-  box-sizing: border-box;
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  --bg:#eef3f1; --surface:#fff; --ink:#0e2924; --muted:#4d6862; --line:#cfdcd8;
+  --brand:#0f6b5c; --brand-ink:#fff; --yes:#0f6b5c; --no:#b3261e;
+  --warn-bg:#fff3d6; --warn-ink:#6b4700; --warn-line:#e8b94a;
+  --danger-bg:#fde8e6; --danger-ink:#8c1d18; --danger-line:#e5877f;
+  --ok-bg:#e3f3ee; --ok-ink:#0b4a40; --ok-line:#86c5b6;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0e1a18; --surface: #162624; --ink: #e8f2ef; --muted: #a3bcb6;
-    --line: #2a403c; --brand: #4fc2ac; --brand-ink: #08201b;
-    --yes: #4fc2ac; --no: #ff8a80;
+    --bg:#0e1a18; --surface:#162624; --ink:#e8f2ef; --muted:#a3bcb6; --line:#2a403c;
+    --brand:#4fc2ac; --brand-ink:#08201b; --yes:#4fc2ac; --no:#ff8a80;
+    --warn-bg:#3a2d0e; --warn-ink:#f3d994; --warn-line:#8a6a1c;
+    --danger-bg:#3d1a18; --danger-ink:#ffc2bc; --danger-line:#9a4640;
+    --ok-bg:#12342e; --ok-ink:#bfe9de; --ok-line:#2f6b5e;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0e1a18; --surface: #162624; --ink: #e8f2ef; --muted: #a3bcb6;
-  --line: #2a403c; --brand: #4fc2ac; --brand-ink: #08201b;
-  --yes: #4fc2ac; --no: #ff8a80;
+  --bg:#0e1a18; --surface:#162624; --ink:#e8f2ef; --muted:#a3bcb6; --line:#2a403c;
+  --brand:#4fc2ac; --brand-ink:#08201b; --yes:#4fc2ac; --no:#ff8a80;
+  --warn-bg:#3a2d0e; --warn-ink:#f3d994; --warn-line:#8a6a1c;
+  --danger-bg:#3d1a18; --danger-ink:#ffc2bc; --danger-line:#9a4640;
+  --ok-bg:#12342e; --ok-ink:#bfe9de; --ok-line:#2f6b5e;
 }
-html { scroll-padding-top: env(safe-area-inset-top, 0px); }
-* { box-sizing: border-box; }
+html { scroll-padding-top:env(safe-area-inset-top,0px); }
+* { box-sizing:border-box; }
 body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--ink);
-  font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-  font-size: 1.05rem;
-  line-height: 1.6;
-  word-break: keep-all;
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  font-size:1.02rem; line-height:1.55; word-break:keep-all;
 }
-.wrap { max-width: 680px; margin: 0 auto; padding: 24px 16px 40px; }
+button, input, select, textarea { font:inherit; color:inherit; }
+.wrap { max-width:680px; margin:0 auto; padding:22px 14px 44px; }
+h1 { font-size:clamp(1.55rem,6.6vw,2.05rem); font-weight:900; line-height:1.25; letter-spacing:-.02em; margin:0; }
+h2 { font-size:1.12rem; margin:0 0 10px; }
 
-h1 {
-  font-size: clamp(1.6rem, 7vw, 2.1rem);
-  font-weight: 900;
-  line-height: 1.25;
-  letter-spacing: -0.02em;
-  margin: 0;
-}
+/* tabs */
+.tab-bar { display:grid; grid-template-columns:repeat(4,1fr); margin:16px 0 14px; background:var(--surface);
+  border:2px solid var(--brand); border-radius:14px; overflow:hidden; }
+.tab-bar button { background:none; border:0; padding:13px 2px; font-weight:700; font-size:.98rem; color:var(--brand); cursor:pointer; }
+.tab-bar button + button { border-left:2px solid var(--brand); }
+.tab-bar button[aria-selected="true"] { background:var(--brand); color:var(--brand-ink); }
+.tab-bar button:focus-visible { outline:3px solid var(--ink); outline-offset:-6px; }
+.panel[hidden] { display:none; }
 
-/* tabs (CSS only) */
-.tabs input { position: absolute; opacity: 0; pointer-events: none; }
-.tab-bar {
-  display: grid; grid-template-columns: 1fr 1fr;
-  margin: 18px 0 14px;
-  background: var(--surface);
-  border: 2px solid var(--brand);
-  border-radius: 14px;
-  overflow: hidden;
-}
-.tab-bar label {
-  text-align: center; padding: 14px 8px;
-  font-weight: 700; font-size: 1.1rem;
-  cursor: pointer; color: var(--brand); user-select: none;
-}
-.tab-bar label + label { border-left: 2px solid var(--brand); }
-#t1:checked ~ .tab-bar label[for="t1"],
-#t2:checked ~ .tab-bar label[for="t2"] {
-  background: var(--brand); color: var(--brand-ink);
-}
-#t1:focus-visible ~ .tab-bar label[for="t1"],
-#t2:focus-visible ~ .tab-bar label[for="t2"] {
-  outline: 3px solid var(--ink); outline-offset: -6px;
-}
-.panel { display: none; }
-#t1:checked ~ .panels .p1,
-#t2:checked ~ .panels .p2 { display: block; }
+.card { background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:12px; }
+.rules { list-style:none; margin:0; padding:0; }
+.rules li { display:grid; grid-template-columns:2rem 1fr; gap:6px; padding:12px 0; border-top:1px solid var(--line); font-weight:700; }
+.rules li:first-child { border-top:0; padding-top:2px; }
+.rules li:last-child { padding-bottom:2px; }
+.mark { font-weight:900; font-size:1.2rem; }
+.yes .mark { color:var(--yes); } .no .mark { color:var(--no); }
 
-.card {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 6px 18px;
-  margin-bottom: 12px;
-}
-.rules { list-style: none; margin: 0; padding: 0; }
-.rules li {
-  display: grid; grid-template-columns: 2rem 1fr; gap: 6px;
-  padding: 14px 0; border-top: 1px solid var(--line);
-  font-weight: 700;
-}
-.rules li:first-child { border-top: 0; }
-.mark { font-weight: 900; font-size: 1.25rem; }
-.yes .mark { color: var(--yes); }
-.no .mark { color: var(--no); }
+.btn { display:block; width:100%; text-align:center; text-decoration:none; cursor:pointer;
+  background:var(--brand); color:var(--brand-ink); font-weight:700; padding:14px 16px; border:2px solid var(--brand); border-radius:12px; }
+.btn.ghost { background:transparent; color:var(--brand); }
+.btn.sm { display:inline-block; width:auto; padding:8px 12px; font-size:.92rem; border-radius:10px; }
+.btn:disabled { opacity:.55; cursor:default; }
+.btn:focus-visible, .chip:focus-visible, .opt:focus-visible { outline:3px solid var(--ink); outline-offset:2px; }
+.row { display:flex; gap:8px; flex-wrap:wrap; }
+.muted { color:var(--muted); font-size:.9rem; }
 
-.btn {
-  display: block; text-align: center; text-decoration: none;
-  background: var(--brand); color: var(--brand-ink);
-  font-weight: 700; padding: 15px 16px; border-radius: 12px;
-}
-.btn:hover { filter: brightness(1.08); }
-.btn:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
-.note { margin: 0 0 12px; font-weight: 700; }
+/* diagnosis */
+.opts { display:grid; gap:8px; }
+.opt { text-align:left; background:var(--surface); border:2px solid var(--line); border-radius:12px; padding:14px; font-weight:700; cursor:pointer; }
+.opt small { display:block; font-weight:400; color:var(--muted); }
+.opt:hover { border-color:var(--brand); }
+.result { border:2px solid; border-radius:14px; padding:16px; margin-top:4px; }
+.result.ok { background:var(--ok-bg); color:var(--ok-ink); border-color:var(--ok-line); }
+.result.warn { background:var(--warn-bg); color:var(--warn-ink); border-color:var(--warn-line); }
+.result.danger { background:var(--danger-bg); color:var(--danger-ink); border-color:var(--danger-line); }
+.result h2 { margin-bottom:8px; }
+.result ol { margin:0 0 12px; padding-left:1.25em; font-weight:700; }
+.result li { margin:6px 0; }
+.contacts { display:grid; gap:8px; }
+.contacts a, .contacts button { background:var(--surface); color:var(--ink); border:1px solid var(--line); border-radius:10px;
+  padding:11px 12px; text-decoration:none; font-weight:700; text-align:left; cursor:pointer; }
+.contacts small { display:block; font-weight:400; color:var(--muted); }
 
-.map {
-  width: 100%;
-  height: min(62vh, 480px);
-  min-height: 320px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--surface);
-  display: block;
-  margin-bottom: 12px;
-}
-.place { padding: 14px 0; font-weight: 700; }
-.place + .place { border-top: 1px solid var(--line); }
+/* map */
+.chips { display:flex; gap:8px; flex-wrap:wrap; margin:12px 0; }
+.chip { background:var(--surface); color:var(--brand); border:2px solid var(--brand); border-radius:999px; padding:8px 15px; font-weight:700; cursor:pointer; }
+.chip[aria-pressed="true"] { background:var(--brand); color:var(--brand-ink); }
+#map { width:100%; height:min(56vh,440px); min-height:300px; border:1px solid var(--line); border-radius:14px; background:var(--surface); margin-bottom:6px; z-index:0; }
+.mapfail { display:grid; place-items:center; text-align:center; padding:20px; font-weight:700; }
+.list { list-style:none; margin:12px 0 0; padding:0; display:grid; gap:10px; }
+.item { background:var(--surface); border:2px solid var(--line); border-radius:14px; padding:13px; }
+.item.sel { border-color:#ff8f00; }
+.item.rec { border-color:var(--brand); }
+.item b { font-size:1.05rem; }
+.tag { display:inline-block; font-size:.78rem; font-weight:700; background:var(--brand); color:var(--brand-ink); border-radius:6px; padding:1px 7px; margin-left:6px; vertical-align:middle; }
+.item .addr { color:var(--muted); font-size:.9rem; margin:2px 0 10px; }
+.status { font-weight:700; margin:8px 0 0; min-height:1.4em; }
+
+/* forms */
+label.f { display:block; font-weight:700; margin:12px 0 5px; }
+.in { width:100%; background:var(--surface); border:2px solid var(--line); border-radius:10px; padding:11px 12px; }
+.in:focus { outline:none; border-color:var(--brand); }
+textarea.in { min-height:96px; resize:vertical; }
+.seg { display:grid; grid-template-columns:1fr 1fr; border:2px solid var(--brand); border-radius:12px; overflow:hidden; }
+.seg button { background:none; border:0; padding:11px 6px; font-weight:700; color:var(--brand); cursor:pointer; }
+.seg button + button { border-left:2px solid var(--brand); }
+.seg button[aria-pressed="true"] { background:var(--brand); color:var(--brand-ink); }
+.stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; text-align:center; margin-bottom:14px; }
+.stat { background:var(--bg); border-radius:12px; padding:12px 4px; }
+.stat b { display:block; font-size:1.55rem; font-weight:900; color:var(--brand); line-height:1.2; }
+.bar { height:10px; border-radius:99px; background:var(--line); overflow:hidden; margin:8px 0 4px; }
+.bar i { display:block; height:100%; background:var(--brand); }
+.hist { list-style:none; margin:10px 0 0; padding:0; }
+.hist li { display:flex; justify-content:space-between; gap:8px; padding:9px 0; border-top:1px solid var(--line); font-size:.95rem; }
+.hist span:last-child { color:var(--muted); white-space:nowrap; }
+.leaflet-popup-content { font-family:inherit; line-height:1.45; color:#0e2924; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>안산 폐보조배터리<br>배출 안내</h1>
 
-  <main class="tabs">
-    <input type="radio" name="tab" id="t1" checked>
-    <input type="radio" name="tab" id="t2">
+  <div class="tab-bar" role="tablist">
+    <button role="tab" id="tab-how" aria-selected="true" aria-controls="p-how">배출 방법</button>
+    <button role="tab" id="tab-map" aria-selected="false" aria-controls="p-map">수거 장소</button>
+    <button role="tab" id="tab-report" aria-selected="false" aria-controls="p-report">제보</button>
+    <button role="tab" id="tab-me" aria-selected="false" aria-controls="p-me">내 기록</button>
+  </div>
 
-    <div class="tab-bar">
-      <label for="t1">배출 방법</label>
-      <label for="t2">수거 장소</label>
+  <!-- 1. 배출 방법 -->
+  <section class="panel" id="p-how" role="tabpanel" aria-labelledby="tab-how">
+    <div class="card">
+      <ul class="rules">
+        <li class="yes"><span class="mark">O</span><span>폐건전지 수거함에 넣기</span></li>
+        <li class="no"><span class="mark">X</span><span>일반쓰레기·플라스틱에 버리지 않기</span></li>
+        <li class="no"><span class="mark">X</span><span>분해하지 않고 그대로 넣기</span></li>
+        <li class="yes"><span class="mark">O</span><span>단자가 드러나 있으면 절연하기</span></li>
+        <li class="yes"><span class="mark">O</span><span>2차전지 전용 수거함이 있으면 그곳에 넣기</span></li>
+      </ul>
     </div>
 
-    <div class="panels">
-
-      <section class="panel p1">
-        <div class="card">
-          <ul class="rules">
-            <li class="yes"><span class="mark">O</span><span>폐건전지 수거함에 넣기</span></li>
-            <li class="no"><span class="mark">X</span><span>일반쓰레기·플라스틱에 버리지 않기</span></li>
-            <li class="no"><span class="mark">X</span><span>분해하지 않고 그대로 넣기</span></li>
-            <li class="yes"><span class="mark">O</span><span>단자가 드러나 있으면 절연하기</span></li>
-            <li class="yes"><span class="mark">O</span><span>2차전지 전용 수거함이 있으면 그곳에 넣기</span></li>
-          </ul>
-        </div>
-        <a class="btn" href="https://www.ansan.go.kr/www/common/cntnts/selectContents.do?cntnts_id=C0001357" target="_blank" rel="noopener noreferrer">안산시 공식 배출 안내 보기</a>
-      </section>
-
-      <section class="panel p2">
-        <p class="note">지도를 움직여 가까운 행정복지센터를 찾아보세요.</p>
-        <iframe class="map" title="안산시 행정복지센터 지도" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
-          src="https://www.google.com/maps?q=%EC%95%88%EC%82%B0%EC%8B%9C+%ED%96%89%EC%A0%95%EB%B3%B5%EC%A7%80%EC%84%BC%ED%84%B0&amp;hl=ko&amp;output=embed"></iframe>
-        <a class="btn" href="https://www.google.com/maps/search/?api=1&amp;query=%EC%95%88%EC%82%B0%EC%8B%9C+%ED%96%89%EC%A0%95%EB%B3%B5%EC%A7%80%EC%84%BC%ED%84%B0" target="_blank" rel="noopener noreferrer">큰 지도로 열기</a>
-        <div class="card" style="margin-top:12px">
-          <div class="place">동 행정복지센터 수거함</div>
-          <div class="place">공공주택·학교 내 수거함</div>
-        </div>
-      </section>
-
+    <div class="card" id="diag">
+      <h2>내 보조배터리 상태는?</h2>
+      <div id="diag-body"></div>
     </div>
-  </main>
+
+    <a class="btn ghost" href="https://www.ansan.go.kr/www/common/cntnts/selectContents.do?cntnts_id=C0001357" target="_blank" rel="noopener noreferrer">안산시 공식 배출 안내 보기</a>
+  </section>
+
+  <!-- 2. 수거 장소 -->
+  <section class="panel" id="p-map" role="tabpanel" aria-labelledby="tab-map" hidden>
+    <button class="btn" id="btn-locate">📍 내 위치에서 가까운 수거함 찾기</button>
+    <p class="status" id="locate-status" role="status"></p>
+    <div class="chips" id="chips" role="group" aria-label="구 선택"></div>
+    <div id="map"></div>
+    <p class="muted" style="margin:0">핀 위치는 대략적이에요. 정확한 위치는 길찾기로 확인하세요.</p>
+    <ul class="list" id="list"></ul>
+    <button class="btn ghost" id="btn-more" style="margin-top:10px" hidden>더 보기</button>
+  </section>
+
+  <!-- 3. 제보 -->
+  <section class="panel" id="p-report" role="tabpanel" aria-labelledby="tab-report" hidden>
+    <div class="card">
+      <div class="seg" id="rtype">
+        <button type="button" data-v="신규 제보" aria-pressed="true">새 수거함 제보</button>
+        <button type="button" data-v="정보 오류" aria-pressed="false">정보 오류 신고</button>
+      </div>
+
+      <div id="r-target" hidden>
+        <label class="f" for="r-place">어느 수거함인가요?</label>
+        <select class="in" id="r-place"></select>
+      </div>
+
+      <label class="f" for="r-name">장소 이름</label>
+      <input class="in" id="r-name" autocomplete="off" placeholder="예: ○○아파트 관리사무소">
+      <label class="f" for="r-addr">주소</label>
+      <input class="in" id="r-addr" autocomplete="off" placeholder="예: 안산시 단원구 ○○로 12">
+      <label class="f" for="r-detail" id="r-detail-label">수거함 위치와 내용</label>
+      <textarea class="in" id="r-detail" placeholder="예: 1층 입구 오른쪽"></textarea>
+      <label class="f" for="r-contact">연락처 <span class="muted">(선택)</span></label>
+      <input class="in" id="r-contact" autocomplete="off" placeholder="확인이 필요할 때만 연락드려요">
+
+      <button class="btn" id="r-send" style="margin-top:16px">제보하기</button>
+      <p class="status" id="r-status" role="status"></p>
+    </div>
+    <p class="muted">관리자가 확인한 뒤 지도에 반영돼요.</p>
+  </section>
+
+  <!-- 4. 내 기록 -->
+  <section class="panel" id="p-me" role="tabpanel" aria-labelledby="tab-me" hidden>
+    <div class="card">
+      <div class="stats">
+        <div class="stat"><b id="s-times">0</b>배출 횟수</div>
+        <div class="stat"><b id="s-count">0</b>배출 개수</div>
+        <div class="stat"><b id="s-places">0</b>이용 장소</div>
+      </div>
+      <strong id="s-level"></strong>
+      <div class="bar"><i id="s-bar" style="width:0%"></i></div>
+      <span class="muted" id="s-next"></span>
+    </div>
+
+    <div class="card">
+      <h2>배출 완료 인증</h2>
+      <label class="f" for="c-place" style="margin-top:0">배출한 수거함</label>
+      <select class="in" id="c-place"></select>
+      <label class="f" for="c-count">개수</label>
+      <input class="in" id="c-count" type="number" min="1" max="50" value="1" inputmode="numeric">
+      <button class="btn" id="c-go" style="margin-top:16px">배출했어요</button>
+      <p class="status" id="c-status" role="status"></p>
+      <ul class="hist" id="hist"></ul>
+      <button class="btn ghost sm" id="c-clear" style="margin-top:12px" hidden>기록 지우기</button>
+    </div>
+    <p class="muted">기록은 이 기기에만 저장돼요.</p>
+  </section>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+/* ============ 설정 (관리자가 여기만 고치면 돼요) ============ */
+const CONFIG = {
+  // 제보를 받을 구글폼의 formResponse 주소. 비워두면 접수 연결 전 시범 모드로 동작해요.
+  // 예: "https://docs.google.com/forms/d/e/폼ID/formResponse"
+  REPORT_ACTION: "",
+  // 구글폼 각 질문의 entry 번호 (예: "entry.123456789")
+  REPORT_FIELDS: { type: "", place: "", name: "", address: "", detail: "", contact: "" },
+  // 위치 확인 인증 반경(m). 좌표가 정확한(exact:true) 수거함에만 적용돼요.
+  CHECKIN_RADIUS_M: 300
+};
+
+/* ============ 수거함 데이터 ============
+   places.json 파일이 같은 폴더에 있으면 그 내용으로 바뀌어요(관리자 갱신용).
+   exact:true = 좌표 확인됨, 없으면 대략적 위치 */
+let PLACES = [{"name": "일동행정복지센터", "gu": "상록구", "address": "경기도 안산시 상록구 성호로 53", "lat": 37.3262, "lng": 126.8512}, {"name": "이동행정복지센터", "gu": "상록구", "address": "경기도 안산시 상록구 이동로 46", "lat": 37.3187, "lng": 126.856}, {"name": "사동행정복지센터", "gu": "상록구", "address": "경기도 안산시 상록구 석호로 171", "lat": 37.3055, "lng": 126.847}, {"name": "사이동행정복지센터", "gu": "상록구", "address": "경기도 안산시 상록구 감골1로 52", "lat": 37.3115, "lng": 126.8485}, {"name": "해양동행정복지센터", "gu": "상록구", "address": "경기도 안산시 상록구 해양로 8", "lat": 37.294, "lng": 126.865}, {"name": "본오1동행정복지센터", "gu": "상록구", "address": "경기도 안산시 상록구 샘골로 16", "lat": 37.2975, "lng": 126.8815}, {"name": "본오2동행정복지센터", "gu": "상록구", "address": "경기도 안산시 상록구 석호로 349", "lat": 37.3, "lng": 126.869}, {"name": "본오3동행정복지센터", "gu": "상록구", "address": "경기도 안산시 상록구 용신로 376", "lat": 37.304, "lng": 126.8725}, {"name": "부곡동행정복지센터", "gu": "상록구", "address": "경기도 안산시 상록구 성호로 326", "lat": 37.332, "lng": 126.8665}, {"name": "월피동행정복지센터", "gu": "상록구", "address": "경기도 안산시 상록구 시낭북로 4", "lat": 37.3235, "lng": 126.87}, {"name": "성포동행정복지센터", "gu": "상록구", "address": "경기도 안산시 상록구 충장로 468", "lat": 37.317, "lng": 126.8465}, {"name": "반월동행정복지센터", "gu": "상록구", "address": "경기도 안산시 상록구 건건로 51", "lat": 37.3135, "lng": 126.899}, {"name": "안산동행정복지센터", "gu": "상록구", "address": "경기도 안산시 상록구 장하로 315", "lat": 37.343, "lng": 126.879}, {"name": "고잔동행정복지센터", "gu": "단원구", "address": "경기도 안산시 단원구 화정천동로 252", "lat": 37.327131, "lng": 126.819158, "exact": true}, {"name": "호수동행정복지센터", "gu": "단원구", "address": "경기도 안산시 단원구 광덕2로 125", "lat": 37.311, "lng": 126.8236}, {"name": "중앙동행정복지센터", "gu": "단원구", "address": "경기도 안산시 단원구 예술대학로 76", "lat": 37.317, "lng": 126.832}, {"name": "와동행정복지센터", "gu": "단원구", "address": "경기도 안산시 단원구 선부로 273", "lat": 37.341, "lng": 126.819}, {"name": "원곡동행정복지센터", "gu": "단원구", "address": "경기도 안산시 단원구 부부로 55", "lat": 37.3155, "lng": 126.7995}, {"name": "백운동행정복지센터", "gu": "단원구", "address": "경기도 안산시 단원구 원선로 31", "lat": 37.329, "lng": 126.8045}, {"name": "신길동행정복지센터", "gu": "단원구", "address": "경기도 안산시 단원구 삼일로 42-7", "lat": 37.3405, "lng": 126.801}, {"name": "초지동행정복지센터", "gu": "단원구", "address": "경기도 안산시 단원구 초지동로 67", "lat": 37.3195, "lng": 126.805}, {"name": "선부1동행정복지센터", "gu": "단원구", "address": "경기도 안산시 단원구 선부광장서로 47", "lat": 37.332, "lng": 126.8125}, {"name": "선부2동행정복지센터", "gu": "단원구", "address": "경기도 안산시 단원구 지곡로 46", "lat": 37.3355, "lng": 126.807}, {"name": "선부3동행정복지센터", "gu": "단원구", "address": "경기도 안산시 단원구 선삼로 47", "lat": 37.3265, "lng": 126.812}, {"name": "대부동행정복지센터", "gu": "단원구", "address": "경기도 안산시 단원구 대부중앙로 97-9", "lat": 37.234, "lng": 126.592}];
+
+/* ============ 공통 도구 ============ */
+const $ = s => document.querySelector(s);
+const h = (t, a = {}, ...c) => {
+  const e = document.createElement(t);
+  for (const [k, v] of Object.entries(a)) {
+    if (k === 'class') e.className = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+    else e.setAttribute(k, v);
+  }
+  c.flat().forEach(x => e.append(x));
+  return e;
+};
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
+};
+const dist = (a, b) => {
+  const R = 6371000, r = x => x * Math.PI / 180;
+  const dLat = r(b.lat - a.lat), dLng = r(b.lng - a.lng);
+  const q = Math.sin(dLat / 2) ** 2 + Math.cos(r(a.lat)) * Math.cos(r(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(q));
+};
+const fmtDist = m => m < 1000 ? `약 ${Math.max(10, Math.round(m / 10) * 10)}m` : `약 ${(m / 1000).toFixed(1)}km`;
+const dirUrl = p => 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(p.address);
+const naverUrl = p => 'https://map.naver.com/p/search/' + encodeURIComponent(p.address);
+const locate = (ok, fail) => {
+  if (!navigator.geolocation) return fail(new Error('unsupported'));
+  navigator.geolocation.getCurrentPosition(
+    p => ok({ lat: p.coords.latitude, lng: p.coords.longitude }), fail,
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
+};
+
+/* ============ 탭 ============ */
+const tabs = ['how', 'map', 'report', 'me'];
+function showTab(id) {
+  tabs.forEach(t => {
+    $('#tab-' + t).setAttribute('aria-selected', String(t === id));
+    $('#p-' + t).hidden = t !== id;
+  });
+  if (id === 'map') initMap();
+  window.scrollTo({ top: 0 });
+}
+tabs.forEach(t => $('#tab-' + t).addEventListener('click', () => showTab(t)));
+
+/* ============ 1. 상태 진단 ============ */
+const diag = { step: 1, shape: null };
+const CONTACT = {
+  center: () => h('button', { type: 'button', onclick: () => showTab('map') },
+    '가까운 동 행정복지센터 찾기', h('small', {}, '지도에서 위치와 길찾기를 확인해요')),
+  assoc: () => h('a', { href: 'tel:0269540666' },
+    '한국배터리순환자원협회 02-6954-0666', h('small', {}, '수거함에 넣기 어려울 때 문의')),
+  fire: () => h('a', { href: 'tel:119' }, '119 신고', h('small', {}, '연기·불꽃·심한 열이 있을 때'))
+};
+function resultFor(shape, term) {
+  if (shape === 'normal') {
+    const t = term === 'yes' ? '단자가 드러나 있어요. 절연테이프 등으로 감싸세요'
+      : term === 'no' ? '단자가 가려져 있으면 그대로 두세요'
+      : '단자가 드러나 있다면 절연테이프 등으로 감싸세요';
+    return { tone: 'ok', title: '정상이에요',
+      steps: [t, '분해하지 말고 그대로 넣으세요', '폐건전지 수거함에 넣으세요 (2차전지 전용 수거함이 있으면 그곳에)', '일반쓰레기·플라스틱에는 버리지 마세요'],
+      contacts: ['center'] };
+  }
+  if (shape === 'swollen') return { tone: 'warn', title: '부풀었어요',
+    steps: ['충전과 사용을 멈추세요', '누르거나 분해하지 마세요', '타기 쉬운 물건에서 떼어 금속 등 불에 안 타는 용기에 따로 두세요', '수거함에 바로 넣지 말고 행정복지센터 담당자에게 상태를 알리고 직접 전달하세요'],
+    contacts: ['center', 'assoc'] };
+  if (shape === 'damaged') return { tone: 'warn', title: '파손됐어요',
+    steps: ['충전과 사용을 멈추세요', '새어 나온 액체는 맨손으로 만지지 마세요 (닿았다면 물로 씻기)', '타기 쉬운 물건에서 떼어 금속 등 불에 안 타는 용기에 따로 두세요', '수거함에 바로 넣지 말고 행정복지센터 담당자에게 직접 전달하세요'],
+    contacts: ['center', 'assoc'] };
+  return { tone: 'danger', title: '위험한 상태예요',
+    steps: ['만지거나 끄려고 하지 말고 멀리 떨어지세요', '바로 119에 신고하세요'], contacts: ['fire'] };
+}
+function renderDiag() {
+  const box = $('#diag-body'); box.replaceChildren();
+  const reset = h('button', { class: 'btn ghost sm', type: 'button', style: 'margin-top:12px', onclick: () => { diag.step = 1; renderDiag(); } }, '다시 선택');
+  if (diag.step === 1) {
+    const o = (v, t, s) => h('button', { class: 'opt', type: 'button', onclick: () => {
+      diag.shape = v;
+      diag.step = v === 'normal' ? 2 : 3; diag.term = null; renderDiag(); } }, t, s ? h('small', {}, s) : '');
+    box.append(h('div', { class: 'opts' },
+      o('normal', '정상이에요', '부풀거나 깨진 곳이 없어요'),
+      o('swollen', '부풀었어요', '배가 볼록하거나 케이스가 벌어졌어요'),
+      o('damaged', '파손됐어요', '찌그러짐·균열·액체 새는 흔적이 있어요'),
+      o('hot', '뜨겁거나 연기가 나요', '연기·불꽃·타는 냄새·심한 열')));
+  } else if (diag.step === 2) {
+    const o = (v, t) => h('button', { class: 'opt', type: 'button', onclick: () => { diag.term = v; diag.step = 3; renderDiag(); } }, t);
+    box.append(h('p', { style: 'font-weight:700;margin:0 0 8px' }, '금속 단자가 드러나 있나요?'),
+      h('div', { class: 'opts' }, o('yes', '네, 드러나 있어요'), o('no', '아니요, 가려져 있어요'), o('unknown', '잘 모르겠어요')), reset);
+  } else {
+    const r = resultFor(diag.shape, diag.term);
+    box.append(h('div', { class: 'result ' + r.tone },
+      h('h2', {}, r.title), h('ol', {}, r.steps.map(s => h('li', {}, s))),
+      h('div', { class: 'contacts' }, r.contacts.map(c => CONTACT[c]()))), reset);
+  }
+}
+
+/* ============ 2. 수거 장소 / 지도 ============ */
+const state = { gu: 'all', sel: null, pos: null, limit: 5 };
+let map = null, userMarker = null; const markers = {};
+
+function sortedPlaces() {
+  let list = PLACES.filter(p => state.gu === 'all' || p.gu === state.gu);
+  if (state.pos) list = list.map(p => ({ ...p, d: dist(state.pos, p) })).sort((a, b) => a.d - b.d);
+  else list = list.slice().sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+  return list;
+}
+function markerStyle(p) {
+  const sel = state.sel === p.name, dim = state.gu !== 'all' && p.gu !== state.gu;
+  return sel ? { radius: 13, color: '#ff8f00', weight: 4, fillColor: '#0f6b5c', fillOpacity: 1, opacity: 1 }
+    : { radius: 9, color: '#ffffff', weight: 2, fillColor: '#0f6b5c', fillOpacity: dim ? .22 : .95, opacity: dim ? .3 : 1 };
+}
+function popupFor(p) {
+  return h('div', {}, h('b', {}, p.name), h('div', {}, p.address),
+    p.exact ? '' : h('div', { style: 'color:#55706a;font-size:.85em' }, '대략적 위치'),
+    h('div', { style: 'margin-top:8px;display:flex;gap:6px;flex-wrap:wrap' },
+      h('a', { class: 'btn sm', href: dirUrl(p), target: '_blank', rel: 'noopener noreferrer', style: 'background:#0f6b5c;border-color:#0f6b5c;color:#fff' }, '길찾기'),
+      h('button', { class: 'btn ghost sm', type: 'button', style: 'background:transparent;border-color:#0f6b5c;color:#0f6b5c', onclick: () => goCheckin(p.name) }, '배출 인증')));
+}
+function drawMarkers() {
+  Object.values(markers).forEach(m => m.remove());
+  for (const k in markers) delete markers[k];
+  PLACES.forEach(p => {
+    const m = L.circleMarker([p.lat, p.lng], markerStyle(p)).addTo(map);
+    m.bindPopup(() => popupFor(p));
+    m.on('click', () => selectPlace(p.name, false));
+    markers[p.name] = m;
+  });
+}
+function restyle() {
+  PLACES.forEach(p => { const m = markers[p.name]; if (m) { m.setStyle(markerStyle(p)); if (state.sel === p.name) m.bringToFront(); } });
+}
+function fitToVisible() {
+  if (!map) return;
+  let pts = PLACES.filter(p => state.gu === 'all' || p.gu === state.gu);
+  const main = pts.filter(p => p.lng > 126.75); if (main.length) pts = main;
+  if (pts.length) map.fitBounds(pts.map(p => [p.lat, p.lng]), { padding: [30, 30], maxZoom: 14 });
+}
+function selectPlace(name, fly = true) {
+  state.sel = name; restyle();
+  const p = PLACES.find(x => x.name === name);
+  if (map && p && fly) { map.flyTo([p.lat, p.lng], Math.max(map.getZoom(), 15)); markers[name].openPopup(); }
+  renderList();
+}
+function initMap() {
+  const el = $('#map');
+  if (map) { map.invalidateSize(); return; }
+  if (!window.L) {
+    el.classList.add('mapfail');
+    el.append(h('div', {}, '지도를 불러오지 못했어요', h('br'),
+      h('a', { class: 'btn sm', style: 'margin-top:10px', href: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('안산시 행정복지센터'), target: '_blank', rel: 'noopener noreferrer' }, '구글 지도로 보기')));
+    return;
+  }
+  map = L.map(el).setView([37.3219, 126.8309], 12);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
+  drawMarkers(); fitToVisible();
+  if (state.pos) setUserMarker();
+}
+function setUserMarker() {
+  if (!map || !state.pos) return;
+  if (userMarker) userMarker.remove();
+  userMarker = L.circleMarker([state.pos.lat, state.pos.lng], { radius: 8, color: '#fff', weight: 3, fillColor: '#1a73e8', fillOpacity: 1 }).addTo(map).bindTooltip('내 위치');
+}
+function renderChips() {
+  const box = $('#chips'); box.replaceChildren();
+  const gus = ['all', ...new Set(PLACES.map(p => p.gu))];
+  gus.forEach(g => {
+    const n = g === 'all' ? PLACES.length : PLACES.filter(p => p.gu === g).length;
+    box.append(h('button', { class: 'chip', type: 'button', 'aria-pressed': String(state.gu === g), onclick: () => {
+      state.gu = g; state.limit = 5; restyle(); fitToVisible(); renderChips(); renderList(); } },
+      (g === 'all' ? '전체' : g) + ' ' + n));
+  });
+}
+function renderList() {
+  const ul = $('#list'); ul.replaceChildren();
+  const all = sortedPlaces(), shown = all.slice(0, state.limit);
+  shown.forEach((p, i) => {
+    const rec = state.pos && i < 3;
+    ul.append(h('li', { class: 'item' + (state.sel === p.name ? ' sel' : '') + (rec ? ' rec' : '') },
+      h('b', {}, p.name), rec ? h('span', { class: 'tag' }, '추천') : '',
+      h('div', { class: 'addr' }, p.address + (p.d != null ? ' · ' + fmtDist(p.d) : '')),
+      h('div', { class: 'row' },
+        h('a', { class: 'btn sm', href: dirUrl(p), target: '_blank', rel: 'noopener noreferrer' }, '길찾기'),
+        h('button', { class: 'btn ghost sm', type: 'button', onclick: () => { selectPlace(p.name); $('#map').scrollIntoView({ behavior: 'smooth', block: 'center' }); } }, '지도에서 보기'),
+        h('button', { class: 'btn ghost sm', type: 'button', onclick: () => goCheckin(p.name) }, '배출 인증'))));
+  });
+  $('#btn-more').hidden = all.length <= state.limit;
+  fillPlaceSelects();
+}
+$('#btn-more').addEventListener('click', () => { state.limit += 10; renderList(); });
+$('#btn-locate').addEventListener('click', () => {
+  const st = $('#locate-status'); st.textContent = '내 위치를 찾는 중…';
+  locate(pos => {
+    state.pos = pos; state.gu = 'all'; state.limit = 5;
+    const near = PLACES.map(p => ({ p, d: dist(pos, p) })).sort((a, b) => a.d - b.d)[0];
+    renderChips(); setUserMarker(); restyle();
+    if (near.d > 30000) { st.textContent = '안산에서 멀리 떨어져 있어요. 가장 가까운 곳을 보여드릴게요.'; }
+    else st.textContent = `가장 가까운 곳: ${near.p.name} (${fmtDist(near.d)})`;
+    state.sel = near.p.name; restyle(); renderList();
+    if (map) { map.fitBounds([[pos.lat, pos.lng], [near.p.lat, near.p.lng]], { padding: [40, 40], maxZoom: 16 }); markers[near.p.name].openPopup(); }
+  }, () => { st.textContent = '위치를 가져오지 못했어요. 브라우저의 위치 권한을 확인해 주세요.'; });
+});
+
+/* ============ 3. 제보 ============ */
+const rstate = { type: '신규 제보' };
+document.querySelectorAll('#rtype button').forEach(b => b.addEventListener('click', () => {
+  rstate.type = b.dataset.v;
+  document.querySelectorAll('#rtype button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  const err = rstate.type === '정보 오류';
+  $('#r-target').hidden = !err;
+  $('#r-detail-label').textContent = err ? '무엇이 잘못됐나요?' : '수거함 위치와 내용';
+  $('#r-detail').placeholder = err ? '예: 수거함이 없어졌어요 / 위치가 달라요' : '예: 1층 입구 오른쪽';
+}));
+$('#r-send').addEventListener('click', async () => {
+  const st = $('#r-status'), v = id => $(id).value.trim();
+  const data = { type: rstate.type, place: rstate.type === '정보 오류' ? $('#r-place').value : '',
+    name: v('#r-name'), address: v('#r-addr'), detail: v('#r-detail'), contact: v('#r-contact') };
+  if (!data.detail && !data.name) { st.textContent = '장소 이름이나 내용을 적어 주세요.'; return; }
+  const pending = store.get('pb_reports', []); pending.push({ ...data, t: new Date().toISOString() }); store.set('pb_reports', pending);
+  if (!CONFIG.REPORT_ACTION) { st.textContent = '접수 창구가 아직 연결되지 않은 시범 상태예요. 내용은 이 기기에만 임시 저장됐어요.'; return; }
+  const body = new URLSearchParams();
+  for (const k in CONFIG.REPORT_FIELDS) if (CONFIG.REPORT_FIELDS[k]) body.append(CONFIG.REPORT_FIELDS[k], data[k] || '');
+  $('#r-send').disabled = true; st.textContent = '보내는 중…';
+  try {
+    await fetch(CONFIG.REPORT_ACTION, { method: 'POST', mode: 'no-cors', body });
+    st.textContent = '제보가 접수됐어요. 확인 후 지도에 반영할게요.';
+    ['#r-name', '#r-addr', '#r-detail', '#r-contact'].forEach(id => $(id).value = '');
+  } catch (e) { st.textContent = '전송하지 못했어요. 잠시 뒤 다시 시도해 주세요.'; }
+  $('#r-send').disabled = false;
+});
+
+/* ============ 4. 인증 / 내 기록 ============ */
+const LEVELS = [[0, '시작 전'], [1, '🌱 새싹'], [3, '♻️ 실천가'], [10, '🛡️ 지킴이']];
+function fillPlaceSelects() {
+  const names = sortedPlaces().map(p => p.name);
+  const all = PLACES.map(p => p.name).sort((a, b) => a.localeCompare(b, 'ko'));
+  const fill = (sel, list, keep) => {
+    const cur = keep ? sel.value : ''; sel.replaceChildren();
+    list.forEach(n => sel.append(h('option', { value: n }, n)));
+    if (cur && list.includes(cur)) sel.value = cur;
+  };
+  fill($('#c-place'), state.pos ? PLACES.map(p => ({ n: p.name, d: dist(state.pos, p) })).sort((a, b) => a.d - b.d).map(x => x.n) : all, true);
+  fill($('#r-place'), all, true);
+}
+function goCheckin(name) { showTab('me'); $('#c-place').value = name; }
+function renderRecords() {
+  const rec = store.get('pb_records', []);
+  const times = rec.length, count = rec.reduce((s, r) => s + r.count, 0), places = new Set(rec.map(r => r.place)).size;
+  $('#s-times').textContent = times; $('#s-count').textContent = count; $('#s-places').textContent = places;
+  let li = 0; LEVELS.forEach((l, i) => { if (times >= l[0]) li = i; });
+  $('#s-level').textContent = LEVELS[li][1];
+  const next = LEVELS[li + 1];
+  $('#s-bar').style.width = (next ? Math.min(100, (times - LEVELS[li][0]) / (next[0] - LEVELS[li][0]) * 100) : 100) + '%';
+  $('#s-next').textContent = next ? `다음 단계까지 ${next[0] - times}회` : '최고 단계예요';
+  const ul = $('#hist'); ul.replaceChildren();
+  rec.slice().reverse().slice(0, 5).forEach(r => {
+    const d = new Date(r.t);
+    ul.append(h('li', {}, h('span', {}, `${r.place} · ${r.count}개` + (r.verified ? ' ✓' : '')),
+      h('span', {}, `${d.getMonth() + 1}/${d.getDate()}`)));
+  });
+  $('#c-clear').hidden = !times;
+}
+$('#c-go').addEventListener('click', () => {
+  const st = $('#c-status'), name = $('#c-place').value;
+  const count = Math.max(1, Math.min(50, parseInt($('#c-count').value, 10) || 1));
+  const p = PLACES.find(x => x.name === name); if (!p) return;
+  const save = verified => {
+    const rec = store.get('pb_records', []);
+    rec.push({ t: new Date().toISOString(), place: name, count, verified });
+    store.set('pb_records', rec); renderRecords();
+    st.textContent = verified ? '위치까지 확인돼 인증됐어요 ✓' : '기록됐어요 (자가 인증)';
+    $('#c-go').disabled = false;
+  };
+  $('#c-go').disabled = true; st.textContent = '확인하는 중…';
+  if (!p.exact) { save(false); return; }
+  locate(pos => save(dist(pos, p) <= CONFIG.CHECKIN_RADIUS_M), () => save(false));
+});
+$('#c-clear').addEventListener('click', () => {
+  if (confirm('기록을 모두 지울까요?')) { store.set('pb_records', []); renderRecords(); $('#c-status').textContent = ''; }
+});
+
+/* ============ 시작 ============ */
+function refreshAll() { renderChips(); renderList(); renderRecords(); if (map) { drawMarkers(); } }
+renderDiag(); refreshAll();
+fetch('places.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(d => {
+  if (Array.isArray(d) && d.length && d.every(x => x.name && x.address && isFinite(x.lat) && isFinite(x.lng))) { PLACES = d; refreshAll(); }
+}).catch(() => {});
+</script>
 </body>
 </html>
